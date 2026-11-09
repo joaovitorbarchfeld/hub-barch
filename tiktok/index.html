@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Post to TikTok | HUB-Barch</title>
+<meta name="description" content="HUB-Barch posting screen: review a clip, choose privacy and interaction settings, and post it to your own TikTok account.">
+<style>
+:root{--bg:#10072D;--surf:#1A0F3D;--line:#3A2A6E;--txt:#F5F5F5;--soft:#A99BD4;--lilac:#B98CFF;--pink:#FF168F;--cyan:#00D9FF;--ok:#3DDC97;--err:#FF6B81}
+@media (prefers-color-scheme:light){:root{--bg:#F6F3FF;--surf:#FFFFFF;--line:#D8CCF5;--txt:#1B1038;--soft:#5B4D8A;--lilac:#5B2BC0;--pink:#C4005F;--cyan:#006E86;--ok:#0B7A4B;--err:#B3112E}}
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--txt);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:880px;margin:0 auto;padding:20px 16px 64px}
+header{padding:6px 0 16px;border-bottom:1px solid var(--line)}
+.brand{font-weight:800;letter-spacing:.04em;color:var(--lilac);text-decoration:none}
+h1{font-size:clamp(1.5rem,4.5vw,2rem);line-height:1.2;margin:22px 0 4px}
+h2{font-size:1.05rem;margin:0 0 10px;color:var(--lilac)}
+.muted{color:var(--soft);font-size:.9rem}
+.card{background:var(--surf);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:16px 0}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:18px}
+@media (max-width:720px){.grid{grid-template-columns:1fr}}
+.creator{display:flex;align-items:center;gap:12px}
+.creator img{width:48px;height:48px;border-radius:50%;object-fit:cover;background:var(--line)}
+.creator b{display:block}
+video{width:100%;max-height:420px;border-radius:10px;background:#000}
+label{display:block;font-weight:600;margin:12px 0 4px}
+select,textarea{width:100%;background:var(--bg);color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:9px 10px;font:inherit}
+textarea{min-height:110px;resize:vertical}
+.opts label{display:flex;gap:8px;align-items:flex-start;font-weight:400;margin:6px 0}
+.opts input,.consent input{margin-top:5px}
+.clips{max-height:210px;overflow:auto;border:1px solid var(--line);border-radius:8px;padding:4px 8px}
+.clips label{display:flex;gap:8px;font-weight:400;margin:4px 0}
+button{font:inherit;font-weight:700;border:0;border-radius:10px;padding:11px 18px;cursor:pointer;color:#fff;background:var(--pink)}
+button.alt{background:transparent;color:var(--txt);border:1px solid var(--line)}
+button:disabled{opacity:.45;cursor:not-allowed}
+button:focus-visible,select:focus-visible,textarea:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+.row{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+.msg{margin:12px 0;padding:10px 12px;border-radius:8px;border:1px solid var(--line)}
+.msg.err{border-color:var(--err);color:var(--err)}.msg.ok{border-color:var(--ok);color:var(--ok)}
+.hidden{display:none}
+.count{float:right;font-weight:400}
+.consent{margin-top:14px;font-size:.92rem}
+a{color:var(--cyan)}
+footer{margin-top:36px;color:var(--soft);font-size:.9rem}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header><a class="brand" href="../">HUB-BARCH</a> <span class="muted">· posting screen for @barch.gta</span></header>
+<h1>Post a clip to TikTok</h1>
+<p class="muted">A single-creator tool: the account owner reviews a clip, chooses every setting and posts to their own TikTok account. Nothing is sent to TikTok until you click a button below.</p>
+
+<div id="aviso" class="msg hidden" role="status"></div>
+
+<section id="conectar" class="card hidden">
+  <h2>1. Connect your TikTok account</h2>
+  <p>Log in with TikTok so this app can show your account name and post on your behalf. You can revoke access at any time in the TikTok app.</p>
+  <button id="btn-login" type="button">Log in with TikTok</button>
+</section>
+
+<section id="criador" class="card hidden">
+  <h2>Posting as</h2>
+  <div class="creator"><img id="avatar" alt=""><div><b id="nick"></b><span class="muted" id="usuario"></span></div></div>
+</section>
+
+<section id="form" class="grid hidden">
+  <div class="card">
+    <h2>2. Choose the video</h2>
+    <div class="clips" id="clips" role="radiogroup" aria-label="Clips"></div>
+    <p class="muted">Preview (this is the exact file that will be sent):</p>
+    <video id="prev" controls playsinline preload="metadata"></video>
+  </div>
+  <div class="card">
+    <h2>3. Details</h2>
+    <label for="legenda">Caption <span class="count muted" id="cont">0 / 2200</span></label>
+    <textarea id="legenda" maxlength="2200"></textarea>
+
+    <label for="priv">Who can watch this video</label>
+    <select id="priv" required><option value="" selected disabled>Select a privacy level…</option></select>
+
+    <label>Allow users to</label>
+    <div class="opts">
+      <label><input type="checkbox" id="c-com"> Comment</label>
+      <label><input type="checkbox" id="c-duet"> Duet</label>
+      <label><input type="checkbox" id="c-stitch"> Stitch</label>
+    </div>
+    <p class="muted hidden" id="nota-int">Some options are turned off in your TikTok account settings and cannot be enabled here.</p>
+
+    <label style="margin-top:14px"><input type="checkbox" id="comercial"> Disclose commercial content</label>
+    <div id="comercial-opts" class="opts hidden">
+      <label><input type="checkbox" id="c-marca"> Your brand: you are promoting yourself or your own business</label>
+      <label><input type="checkbox" id="c-parceria"> Branded content: you are promoting another brand or a third party (cannot be private)</label>
+    </div>
+
+    <div class="consent">
+      <label style="font-weight:400"><input type="checkbox" id="consent">
+        <span id="decl">I have reviewed this video and its settings. By posting, I agree to TikTok's <a href="https://www.tiktok.com/legal/page/global/music-usage-confirmation/en" target="_blank" rel="noopener">Music Usage Confirmation</a>.</span></label>
+    </div>
+    <div class="row">
+      <button id="btn-pub" type="button" disabled>Publish to TikTok</button>
+      <button id="btn-rasc" type="button" class="alt" disabled>Send to TikTok drafts instead</button>
+    </div>
+    <p class="muted">Processing can take a few minutes after you publish. Until TikTok completes its audit of this app, posts made through the API are visible only to you.</p>
+    <div id="estado" class="msg hidden" role="status" aria-live="polite"></div>
+  </div>
+</section>
+
+<footer><a href="../privacy.html">Privacy policy</a> · <a href="../terms.html">Terms of service</a></footer>
+</div>
+
+<script>
+const API = "http://127.0.0.1:8777";
+const ROTULOS = {PUBLIC_TO_EVERYONE: "Everyone", MUTUAL_FOLLOW_FRIENDS: "Friends", FOLLOWER_OF_CREATOR: "Followers", SELF_ONLY: "Only me"};
+const $ = (id) => document.getElementById(id);
+let criador = null, clipeId = null, ocupado = false;
+
+async function api(caminho, corpo) {
+  const r = await fetch(API + caminho, corpo === undefined ? {} : {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(corpo)});
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) { const e = new Error(j.erro || ("HTTP " + r.status)); e.dados = j; throw e; }
+  return j;
+}
+function aviso(txt, tipo) { const a = $("aviso"); a.textContent = txt; a.className = "msg " + (tipo || "") + (txt ? "" : " hidden"); }
+function estado(txt, tipo) { const a = $("estado"); a.textContent = txt; a.className = "msg " + (tipo || "") + (txt ? "" : " hidden"); }
+function pronto() {
+  const comercial = $("comercial").checked, marcou = $("c-marca").checked || $("c-parceria").checked;
+  const base = $("consent").checked && clipeId && !ocupado;
+  $("btn-rasc").disabled = !base;
+  $("btn-pub").disabled = !(base && $("priv").value && (!comercial || marcou));
+}
+
+async function iniciar() {
+  try {
+    const e = await api("/tt/estado");
+    if (!e.autorizado || !/video\.publish/.test(e.escopos)) { $("conectar").classList.remove("hidden"); if (e.autorizado) aviso("Your connection needs to be renewed to allow posting. Please log in again.", ""); return; }
+    criador = await api("/tt/criador");
+  } catch (err) {
+    if (err.dados && err.dados.reautorizar) { $("conectar").classList.remove("hidden"); aviso("Your TikTok connection needs to be renewed. Please log in again.", ""); return; }
+    if (err instanceof TypeError) { aviso("The local HUB-Barch server is not running on this computer, so nothing can be posted. Start it and reload this page.", "err"); return; }
+    aviso("Could not load your TikTok account: " + err.message, "err"); return;
+  }
+  $("avatar").src = criador.avatar || ""; $("nick").textContent = criador.nickname || "";
+  $("usuario").textContent = criador.usuario ? " @" + criador.usuario : "";
+  $("criador").classList.remove("hidden");
+  const sel = $("priv");
+  (criador.privacidade || []).forEach(v => { const o = document.createElement("option"); o.value = v; o.textContent = ROTULOS[v] || v; sel.appendChild(o); });
+  [["c-com", "comentario_desligado"], ["c-duet", "dueto_desligado"], ["c-stitch", "stitch_desligado"]].forEach(([id, k]) => { if (criador[k]) { $(id).disabled = true; $("nota-int").classList.remove("hidden"); } });
+  if (!(criador.privacidade || []).length) { aviso("TikTok says this account cannot post right now. Try again later.", "err"); return; }
+  await listar();
+  $("form").classList.remove("hidden");
+}
+async function listar() {
+  const {clipes} = await api("/tt/clipes");
+  const box = $("clips"); box.textContent = "";
+  clipes.forEach(c => {
+    const l = document.createElement("label"), i = document.createElement("input");
+    i.type = "radio"; i.name = "clipe"; i.value = c.id;
+    i.addEventListener("change", () => escolher(c.id));
+    l.append(i, document.createTextNode(" " + c.nome + " (" + c.mb + " MB)")); box.appendChild(l);
+  });
+  if (!clipes.length) box.textContent = "No clips found on this computer.";
+}
+async function escolher(id) {
+  clipeId = id; estado("");
+  $("prev").src = API + "/tt/video?id=" + encodeURIComponent(id);
+  try { $("legenda").value = (await api("/tt/legenda?id=" + encodeURIComponent(id))).legenda || ""; } catch (e) { $("legenda").value = ""; }
+  $("cont").textContent = $("legenda").value.length + " / 2200"; pronto();
+}
+async function acompanhar(pid) {
+  for (let i = 0; i < 40; i++) {
+    await new Promise(r => setTimeout(r, 3000));
+    try {
+      const s = await api("/tt/situacao?publish_id=" + encodeURIComponent(pid));
+      const st = s.status || "";
+      if (st === "PUBLISH_COMPLETE") return estado("Published. Status: PUBLISH_COMPLETE.", "ok");
+      if (st === "SEND_TO_USER_INBOX") return estado("Sent. Open the TikTok app notification (Inbox > System notifications) to finish editing and post. Status: SEND_TO_USER_INBOX.", "ok");
+      if (st === "FAILED") return estado("TikTok could not process this video (" + (s.fail_reason || "unknown reason") + ").", "err");
+      estado("TikTok is processing the video… Status: " + st);
+    } catch (e) { estado("Could not read the status: " + e.message, "err"); return; }
+  }
+  estado("Still processing. You can close this page; check your TikTok account in a few minutes.");
+}
+async function enviar(rota, corpo, pre) {
+  ocupado = true; pronto(); estado(pre);
+  try { const r = await api(rota, corpo); estado("Accepted by TikTok (publish_id received). Processing…"); await acompanhar(r.publish_id); }
+  catch (e) { estado(e.message, "err"); }
+  ocupado = false; pronto();
+}
+
+$("btn-login").addEventListener("click", async () => { try { location.href = (await api("/tt/login")).url; } catch (e) { aviso(e instanceof TypeError ? "The local HUB-Barch server is not running on this computer." : e.message, "err"); } });
+$("legenda").addEventListener("input", () => { $("cont").textContent = $("legenda").value.length + " / 2200"; });
+["priv", "consent", "comercial", "c-marca", "c-parceria"].forEach(id => $(id).addEventListener("change", pronto));
+const DECL_PADRAO = $("decl").innerHTML;
+const DECL_MARCA = "I have reviewed this video and its settings. By posting, I agree to TikTok's <a href=\"https://www.tiktok.com/legal/page/global/bc-policy/en\" target=\"_blank\" rel=\"noopener\">Branded Content Policy</a> and <a href=\"https://www.tiktok.com/legal/page/global/music-usage-confirmation/en\" target=\"_blank\" rel=\"noopener\">Music Usage Confirmation</a>.";
+function declaracao() { $("decl").innerHTML = $("comercial").checked && $("c-parceria").checked ? DECL_MARCA : DECL_PADRAO; }
+$("comercial").addEventListener("change", () => {
+  const on = $("comercial").checked; $("comercial-opts").classList.toggle("hidden", !on);
+  if (!on) { $("c-marca").checked = false; $("c-parceria").checked = false; }
+  declaracao(); pronto();
+});
+$("c-parceria").addEventListener("change", declaracao);
+$("btn-pub").addEventListener("click", () => enviar("/tt/publicar", {
+  id: clipeId, titulo: $("legenda").value, privacidade: $("priv").value, comentario: $("c-com").checked, duet: $("c-duet").checked, stitch: $("c-stitch").checked,
+  marca_propria: $("c-marca").checked, conteudo_de_marca: $("c-parceria").checked, consentimento: $("consent").checked}, "Sending the video to TikTok…"));
+$("btn-rasc").addEventListener("click", () => enviar("/tt/rascunho", {id: clipeId, consentimento: $("consent").checked}, "Sending the video to your TikTok drafts…"));
+iniciar();
+</script>
+</body>
+</html>

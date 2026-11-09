@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Connecting TikTok | HUB-Barch</title>
+<meta name="robots" content="noindex">
+<style>
+:root{--bg:#10072D;--txt:#F5F5F5;--soft:#A99BD4;--err:#FF6B81;--cyan:#00D9FF}
+@media (prefers-color-scheme:light){:root{--bg:#F6F3FF;--txt:#1B1038;--soft:#5B4D8A;--err:#B3112E;--cyan:#006E86}}
+body{margin:0;background:var(--bg);color:var(--txt);font:17px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:560px;margin:0 auto;padding:56px 16px}
+.err{color:var(--err)}.muted{color:var(--soft)}a{color:var(--cyan)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>Connecting your TikTok account</h1>
+<p id="msg" role="status">Finishing the login…</p>
+<p class="muted"><a href="../tiktok/">Back to the posting screen</a> · <a href="../privacy.html">Privacy policy</a></p>
+</div>
+<script>
+(async () => {
+  const p = new URLSearchParams(location.search), code = p.get("code"), state = p.get("state"), erro = p.get("error");
+  history.replaceState(null, "", location.pathname);          // tira o código de uso único da barra de endereço
+  const msg = document.getElementById("msg");
+  if (erro) { msg.className = "err"; msg.textContent = "TikTok did not authorize the connection (" + erro + "). No access was granted."; return; }
+  if (!code || !state) { msg.textContent = "Nothing to do here. Open the posting screen to connect your account."; return; }
+  try {
+    const r = await fetch("http://127.0.0.1:8777/tt/callback", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({code, state})});
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(j.erro || ("HTTP " + r.status));
+    msg.textContent = "Connected. Opening the posting screen…";
+    setTimeout(() => { location.href = "../tiktok/"; }, 900);
+  } catch (e) {
+    msg.className = "err";
+    msg.textContent = e instanceof TypeError ? "The local HUB-Barch server is not running on this computer, so the connection could not be completed." : "Could not complete the connection: " + e.message;
+  }
+})();
+</script>
+</body>
+</html>
